@@ -11,8 +11,10 @@ import ProfileModal from './components/ProfileModal';
 import AuthPage from './components/AuthPage';
 import NotificationToast from './components/NotificationToast';
 import CartDrawer from './components/CartDrawer';
+import SplashScreen from './components/SplashScreen';
 
 const App: React.FC = () => {
+  const [isSplashVisible, setIsSplashVisible] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [role, setRole] = useState<UserRole>(UserRole.BUYER);
   const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
@@ -157,7 +159,12 @@ const App: React.FC = () => {
     addNotification(`Đăng ký thành công ${pack.name}!`, 'SUCCESS');
   };
 
-  const handleConfirmOrder = (kitchen: Kitchen, items: CartItem[], method: PaymentMethod) => {
+  const handleConfirmOrder = (
+    kitchen: Kitchen, 
+    items: CartItem[], 
+    method: PaymentMethod, 
+    recipient: { name: string, phone: string, address: string }
+  ) => {
     const total = items.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0);
     const deliveryFee = deliveryType === 'EXPRESS' ? 10000 : 5000;
     const finalTotal = total + deliveryFee;
@@ -181,6 +188,9 @@ const App: React.FC = () => {
       status: OrderStatus.PENDING,
       paymentMethod: method,
       deliveryType: deliveryType,
+      recipientName: recipient.name,
+      recipientPhone: recipient.phone,
+      recipientAddress: recipient.address,
       notes: orderNotes,
       isPaid: method !== PaymentMethod.CASH,
       createdAt: new Date().toISOString(),
@@ -210,97 +220,104 @@ const App: React.FC = () => {
     addNotification(`Đã thêm ${newMeal.name} vào thực đơn!`, "SUCCESS");
   };
 
-  if (!isLoggedIn) { return <AuthPage onLogin={handleLogin} />; }
-
   return (
     <div className="min-h-screen flex flex-col bg-milk relative">
-      <NotificationToast notifications={notifications} onDismiss={handleDismissNotification} />
-
-      <CartDrawer 
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-        kitchen={cartKitchen}
-        items={cartItems}
-        onUpdateQuantity={updateCartQuantity}
-        onRemoveItem={removeFromCart}
-        deliveryType={deliveryType}
-        setDeliveryType={setDeliveryType}
-        scheduledTime={scheduledTime}
-        setScheduledTime={setScheduledTime}
-        notes={orderNotes}
-        setNotes={setOrderNotes}
-        onCheckout={() => { setIsCartOpen(false); setIsCheckoutOpen(true); }}
-      />
-
-      <Navbar 
-        role={role} 
-        onToggleRole={toggleRole} 
-        orderCount={myOrders.length} 
-        profile={userProfile} 
-        onOpenProfile={() => setShowProfileModal(true)} 
-        onLogout={handleLogout}
-      />
+      {isSplashVisible && <SplashScreen onFinished={() => setIsSplashVisible(false)} />}
       
-      <main className="flex-grow container mx-auto px-4 py-6 max-w-5xl">
-        {role === UserRole.BUYER ? (
-          <BuyerDashboard 
-            kitchens={nearbyKitchens} 
-            userLocation={userLocation}
-            orders={myOrders}
-            walletBalance={walletBalance}
-            mealCredits={mealCredits}
-            walletTransactions={walletTransactions}
-            creditTransactions={creditTransactions}
-            userProfile={userProfile}
-            activeRadius={activeRadius}
-            isSearching={isSearching}
-            cartCount={cartItems.reduce((a, b) => a + b.quantity, 0)}
-            cartTotal={cartItems.reduce((a, b) => a + (b.price * b.quantity), 0)}
-            onOpenCart={() => setIsCartOpen(true)}
-            onRadiusChange={setActiveRadius}
-            onAddToCart={handleAddToCart}
-            onTopUp={handleTopUp}
-            onBuyPackage={buyMealPackage}
+      {!isLoggedIn && !isSplashVisible ? (
+        <AuthPage onLogin={handleLogin} />
+      ) : !isSplashVisible ? (
+        <>
+          <NotificationToast notifications={notifications} onDismiss={handleDismissNotification} />
+
+          <CartDrawer 
+            isOpen={isCartOpen}
+            onClose={() => setIsCartOpen(false)}
+            kitchen={cartKitchen}
+            items={cartItems}
+            onUpdateQuantity={updateCartQuantity}
+            onRemoveItem={removeFromCart}
+            deliveryType={deliveryType}
+            setDeliveryType={setDeliveryType}
+            scheduledTime={scheduledTime}
+            setScheduledTime={setScheduledTime}
+            notes={orderNotes}
+            setNotes={setOrderNotes}
+            onCheckout={() => { setIsCartOpen(false); setIsCheckoutOpen(true); }}
           />
-        ) : (
-          <MerchantDashboard 
-            kitchen={myKitchen}
-            orders={myOrders.filter(o => o.kitchenId === myKitchen.id)}
-            userProfile={userProfile}
-            onUpdateKitchen={handleUpdateKitchen}
-            onAddMeal={handleAddMeal}
+
+          <Navbar 
+            role={role} 
+            onToggleRole={toggleRole} 
+            orderCount={myOrders.length} 
+            profile={userProfile} 
+            onOpenProfile={() => setShowProfileModal(true)} 
+            onLogout={handleLogout}
           />
-        )}
-      </main>
+          
+          <main className="flex-grow container mx-auto px-4 py-6 max-w-5xl">
+            {role === UserRole.BUYER ? (
+              <BuyerDashboard 
+                kitchens={nearbyKitchens} 
+                userLocation={userLocation}
+                orders={myOrders}
+                walletBalance={walletBalance}
+                mealCredits={mealCredits}
+                walletTransactions={walletTransactions}
+                creditTransactions={creditTransactions}
+                userProfile={userProfile}
+                activeRadius={activeRadius}
+                isSearching={isSearching}
+                cartCount={cartItems.reduce((a, b) => a + b.quantity, 0)}
+                cartTotal={cartItems.reduce((a, b) => a + (b.price * b.quantity), 0)}
+                onOpenCart={() => setIsCartOpen(true)}
+                onRadiusChange={setActiveRadius}
+                onAddToCart={handleAddToCart}
+                onTopUp={handleTopUp}
+                onBuyPackage={buyMealPackage}
+              />
+            ) : (
+              <MerchantDashboard 
+                kitchen={myKitchen}
+                orders={myOrders.filter(o => o.kitchenId === myKitchen.id)}
+                userProfile={userProfile}
+                onUpdateKitchen={handleUpdateKitchen}
+                onAddMeal={handleAddMeal}
+              />
+            )}
+          </main>
 
-      {isCheckoutOpen && cartKitchen && (
-        <CheckoutModal 
-          kitchen={cartKitchen}
-          items={cartItems}
-          walletBalance={walletBalance}
-          mealCredits={mealCredits}
-          deliveryType={deliveryType}
-          onClose={() => setIsCheckoutOpen(false)}
-          onConfirm={handleConfirmOrder}
-        />
-      )}
+          {isCheckoutOpen && cartKitchen && (
+            <CheckoutModal 
+              kitchen={cartKitchen}
+              items={cartItems}
+              walletBalance={walletBalance}
+              mealCredits={mealCredits}
+              deliveryType={deliveryType}
+              userProfile={userProfile}
+              onClose={() => setIsCheckoutOpen(false)}
+              onConfirm={handleConfirmOrder}
+            />
+          )}
 
-      {showProfileModal && (
-        <ProfileModal 
-          profile={userProfile}
-          onSave={(newProfile) => { setUserProfile(newProfile); setShowProfileModal(false); }}
-          onClose={() => setShowProfileModal(false)}
-        />
-      )}
+          {showProfileModal && (
+            <ProfileModal 
+              profile={userProfile}
+              onSave={(newProfile) => { setUserProfile(newProfile); setShowProfileModal(false); }}
+              onClose={() => setShowProfileModal(false)}
+            />
+          )}
 
-      <footer className="bg-white border-t py-12 text-center text-gray-400 text-sm">
-        <div className="flex justify-center gap-8 mb-4 font-medium">
-           <span className="hover:text-brand-orange-500 cursor-pointer">Trang chủ</span>
-           <span className="hover:text-brand-orange-500 cursor-pointer">Cộng đồng</span>
-           <span className="hover:text-brand-orange-500 cursor-pointer">Gia nhập bếp</span>
-        </div>
-        <p>© 2024 Cơm Nhà - Neighbors feeding Neighbors</p>
-      </footer>
+          <footer className="bg-white border-t py-12 text-center text-gray-400 text-sm">
+            <div className="flex justify-center gap-8 mb-4 font-medium">
+               <span className="hover:text-brand-orange-500 cursor-pointer">Trang chủ</span>
+               <span className="hover:text-brand-orange-500 cursor-pointer">Cộng đồng</span>
+               <span className="hover:text-brand-orange-500 cursor-pointer">Gia nhập bếp</span>
+            </div>
+            <p>© 2024 Cơm Nhà - Neighbors feeding Neighbors</p>
+          </footer>
+        </>
+      ) : null}
     </div>
   );
 };

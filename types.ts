@@ -102,6 +102,9 @@ export interface Order {
   status: OrderStatus;
   paymentMethod: PaymentMethod;
   deliveryType: DeliveryType;
+  recipientName: string;
+  recipientPhone: string;
+  recipientAddress: string;
   notes?: string;
   isPaid: boolean;
   createdAt: string;

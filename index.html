@@ -36,6 +36,30 @@
             fontFamily: {
               title: ['"Be Vietnam Pro"', 'sans-serif'],
               body: ['Quicksand', 'sans-serif'],
+            },
+            animation: {
+              'fadeIn': 'fadeIn 0.5s ease-out forwards',
+              'fadeOut': 'fadeOut 0.5s ease-in forwards',
+              'slideUp': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'slideLeft': 'slideLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'bounceIn': 'bounceIn 0.8s cubic-bezier(0.36, 0, 0.66, -0.56) forwards',
+              'float': 'float 3s ease-in-out infinite',
+            },
+            keyframes: {
+              fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+              fadeOut: { '0%': { opacity: '1' }, '100%': { opacity: '0' } },
+              slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
+              slideLeft: { '0%': { transform: 'translateX(100%)' }, '100%': { transform: 'translateX(0)' } },
+              bounceIn: {
+                '0%': { transform: 'scale(0.3)', opacity: '0' },
+                '50%': { transform: 'scale(1.05)', opacity: '1' },
+                '70%': { transform: 'scale(0.9)' },
+                '100%': { transform: 'scale(1)' }
+              },
+              float: {
+                '0%, 100%': { transform: 'translateY(0px)' },
+                '50%': { transform: 'translateY(-15px)' }
+              }
             }
           }
         }
@@ -48,6 +72,7 @@
             font-weight: 500;
             background-color: #FDFCFB;
             color: #3A261D;
+            overflow-x: hidden;
         }
         h1, h2, h3, h4, .font-title {
             font-family: 'Be Vietnam Pro', sans-serif;
@@ -56,6 +81,9 @@
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1efed; }
         ::-webkit-scrollbar-thumb { background: #5C3D2E; border-radius: 10px; }
+        
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 <script type="importmap">
 {

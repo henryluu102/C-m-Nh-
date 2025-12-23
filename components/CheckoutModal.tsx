@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Kitchen, PaymentMethod, DeliveryType } from '../types';
+import { Kitchen, PaymentMethod, DeliveryType, UserProfile } from '../types';
 
 interface CheckoutModalProps {
   kitchen: Kitchen;
@@ -8,18 +8,42 @@ interface CheckoutModalProps {
   walletBalance: number;
   mealCredits: number;
   deliveryType: DeliveryType;
+  userProfile: UserProfile;
   onClose: () => void;
-  onConfirm: (kitchen: Kitchen, items: any[], method: PaymentMethod) => void;
+  onConfirm: (kitchen: Kitchen, items: any[], method: PaymentMethod, recipient: { name: string, phone: string, address: string }) => void;
 }
 
-const CheckoutModal: React.FC<CheckoutModalProps> = ({ kitchen, items, walletBalance, mealCredits, deliveryType, onClose, onConfirm }) => {
+const CheckoutModal: React.FC<CheckoutModalProps> = ({ 
+  kitchen, 
+  items, 
+  walletBalance, 
+  mealCredits, 
+  deliveryType, 
+  userProfile,
+  onClose, 
+  onConfirm 
+}) => {
   const [method, setMethod] = useState<PaymentMethod>(
     mealCredits > 0 ? PaymentMethod.MEAL_PACK : (walletBalance >= 45000 ? PaymentMethod.WALLET : PaymentMethod.CASH)
   );
+
+  const [recipient, setRecipient] = useState({
+    name: userProfile.name,
+    phone: userProfile.phone,
+    address: userProfile.address
+  });
   
   const total = items.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0);
   const deliveryFee = deliveryType === 'EXPRESS' ? 10000 : 5000;
   const finalTotal = total + deliveryFee;
+
+  const handleConfirm = () => {
+    if (!recipient.name || !recipient.phone || !recipient.address) {
+      alert("Vui lòng điền đầy đủ thông tin người nhận cơm.");
+      return;
+    }
+    onConfirm(kitchen, items, method, recipient);
+  };
 
   return (
     <div className="fixed inset-0 z-[160] flex items-end sm:items-center justify-center bg-brand-brown-900/60 backdrop-blur-md p-0 sm:p-4 animate-fadeIn">
@@ -35,6 +59,45 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ kitchen, items, walletBal
         </div>
 
         <div className="space-y-8">
+           {/* Section: Recipient Information */}
+           <div className="space-y-4">
+              <p className="text-[10px] font-title font-black text-brand-brown-400 uppercase tracking-widest px-2 flex items-center gap-2">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                Thông tin người nhận cơm
+              </p>
+              <div className="bg-brand-brown-50/30 border border-brand-brown-50 rounded-[2rem] p-6 space-y-4">
+                 <div>
+                    <label className="block text-[9px] font-black text-brand-brown-300 uppercase tracking-widest mb-1.5 ml-1">Họ tên người nhận</label>
+                    <input 
+                      type="text"
+                      value={recipient.name}
+                      onChange={(e) => setRecipient({...recipient, name: e.target.value})}
+                      className="w-full px-5 py-3 rounded-xl bg-white border border-brand-brown-50 focus:border-brand-orange-500 outline-none font-bold text-sm text-brand-brown-900 transition-all"
+                      placeholder="Nhập tên người nhận"
+                    />
+                 </div>
+                 <div>
+                    <label className="block text-[9px] font-black text-brand-brown-300 uppercase tracking-widest mb-1.5 ml-1">Số điện thoại</label>
+                    <input 
+                      type="tel"
+                      value={recipient.phone}
+                      onChange={(e) => setRecipient({...recipient, phone: e.target.value})}
+                      className="w-full px-5 py-3 rounded-xl bg-white border border-brand-brown-50 focus:border-brand-orange-500 outline-none font-bold text-sm text-brand-brown-900 transition-all"
+                      placeholder="09xx xxx xxx"
+                    />
+                 </div>
+                 <div>
+                    <label className="block text-[9px] font-black text-brand-brown-300 uppercase tracking-widest mb-1.5 ml-1">Địa chỉ giao cơm</label>
+                    <textarea 
+                      value={recipient.address}
+                      onChange={(e) => setRecipient({...recipient, address: e.target.value})}
+                      className="w-full px-5 py-3 rounded-xl bg-white border border-brand-brown-50 focus:border-brand-orange-500 outline-none font-bold text-sm text-brand-brown-900 transition-all resize-none h-20"
+                      placeholder="Số nhà, tên đường, phường..."
+                    />
+                 </div>
+              </div>
+           </div>
+
            {/* Summary Section */}
            <div className="bg-brand-brown-50/40 border border-brand-brown-50 rounded-[2.5rem] p-6 shadow-inner">
               <p className="text-[10px] font-title font-black text-brand-brown-400 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -76,7 +139,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ kitchen, items, walletBal
                         <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl transition-colors ${method === PaymentMethod.MEAL_PACK ? 'bg-brand-orange-500 text-white' : 'bg-brand-orange-100 text-brand-orange-600'}`}>🍱</div>
                         <div>
                            <p className="font-title font-black text-sm text-brand-brown-900">Gói Cơm Tháng</p>
-                           <p className="text-[10px] text-brand-orange-600 font-title font-black uppercase tracking-tight">Còng {mealCredits} lượt ăn</p>
+                           <p className="text-[10px] text-brand-orange-600 font-title font-black uppercase tracking-tight">Còn {mealCredits} lượt ăn</p>
                         </div>
                      </div>
                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${method === PaymentMethod.MEAL_PACK ? 'border-brand-orange-500 bg-brand-orange-500' : 'border-brand-brown-100'}`}>
@@ -118,7 +181,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ kitchen, items, walletBal
 
            <div className="pt-6 pb-12">
               <button 
-                onClick={() => onConfirm(kitchen, items, method)}
+                onClick={handleConfirm}
                 className="w-full py-6 bg-brand-orange-500 text-white rounded-[2.5rem] font-title font-black text-xl hover:bg-brand-orange-600 shadow-2xl shadow-brand-orange-200 active:scale-[0.98] transition-all flex items-center justify-center gap-3"
               >
                 <span>Xác nhận đặt đơn</span>
