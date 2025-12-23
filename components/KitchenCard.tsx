@@ -129,16 +129,20 @@ const KitchenCard: React.FC<KitchenCardProps> = ({ kitchen, userLocation, onAddT
                         <button 
                           disabled={isSoldOut}
                           onClick={(e) => handleAddClick(e, meal)}
-                          className={`px-4 py-1.5 rounded-xl transition-all shadow-md active:scale-90 flex items-center gap-1 ${
+                          className={`px-4 py-2 rounded-xl transition-all shadow-md active:scale-95 flex items-center gap-1.5 ${
                             isSoldOut 
                             ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none' 
-                            : 'bg-brand-orange-500 text-white hover:bg-brand-orange-600 shadow-brand-orange-100'
+                            : 'bg-brand-orange-500 text-white hover:bg-brand-orange-600 shadow-brand-orange-100 hover:-translate-y-0.5'
                           }`}
                         >
                           <span className="text-[10px] font-title font-black uppercase">
-                            {isSoldOut ? 'Hết suất' : 'Chọn'}
+                            {isSoldOut ? 'Hết suất' : 'Thêm'}
                           </span>
-                          {!isSoldOut && <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>}
+                          {!isSoldOut && (
+                            <div className="bg-white/20 p-0.5 rounded-md">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M12 4v16m8-8H4" /></svg>
+                            </div>
+                          )}
                         </button>
                       </div>
                     </div>

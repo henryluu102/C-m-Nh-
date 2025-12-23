@@ -79,6 +79,44 @@ const MerchantDashboard: React.FC<MerchantDashboardProps> = ({ kitchen, orders, 
     });
   };
 
+  const getStatusBadge = (status: OrderStatus) => {
+    switch (status) {
+      case OrderStatus.PENDING:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand-honey-50 text-brand-honey-600 text-[10px] font-black uppercase tracking-wider border border-brand-honey-100">
+            <span className="w-2 h-2 rounded-full bg-brand-honey-500 animate-pulse"></span>
+            Mới
+          </span>
+        );
+      case OrderStatus.PREPARING:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand-orange-50 text-brand-orange-600 text-[10px] font-black uppercase tracking-wider border border-brand-orange-100">
+            <span className="text-xs">🍳</span> Đang nấu
+          </span>
+        );
+      case OrderStatus.READY:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-wider border border-emerald-100">
+            <span className="text-xs">🥡</span> Sẵn sàng
+          </span>
+        );
+      case OrderStatus.COMPLETED:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand-brown-50 text-brand-brown-400 text-[10px] font-black uppercase tracking-wider border border-brand-brown-100">
+            <span className="text-xs">✅</span> Hoàn tất
+          </span>
+        );
+      case OrderStatus.CANCELLED:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-wider border border-red-100">
+            <span className="text-xs">✕</span> Đã hủy
+          </span>
+        );
+      default:
+        return <span className="text-xs font-bold text-gray-500">{status}</span>;
+    }
+  };
+
   return (
     <div className="space-y-8 animate-fadeIn">
       {/* Header with Kitchen Info */}
@@ -135,16 +173,15 @@ const MerchantDashboard: React.FC<MerchantDashboardProps> = ({ kitchen, orders, 
       </div>
 
       {activeTab === 'ORDERS' ? (
-        /* Orders Table remains largely the same but with enhanced UI */
         <div className="bg-white rounded-[2.5rem] border border-brand-brown-100 shadow-sm overflow-hidden overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full text-left border-collapse">
             <thead className="bg-brand-brown-50/50">
               <tr>
                 <th className="px-8 py-5 text-[10px] font-black text-brand-brown-400 uppercase tracking-widest">Mã đơn</th>
                 <th className="px-8 py-5 text-[10px] font-black text-brand-brown-400 uppercase tracking-widest">Khách hàng</th>
                 <th className="px-8 py-5 text-[10px] font-black text-brand-brown-400 uppercase tracking-widest">Món ăn</th>
                 <th className="px-8 py-5 text-[10px] font-black text-brand-brown-400 uppercase tracking-widest">Trạng thái</th>
-                <th className="px-8 py-5 text-[10px] font-black text-brand-brown-400 uppercase tracking-widest">Thao tác</th>
+                <th className="px-8 py-5 text-[10px] font-black text-brand-brown-400 uppercase tracking-widest text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-brand-brown-50">
@@ -154,28 +191,27 @@ const MerchantDashboard: React.FC<MerchantDashboardProps> = ({ kitchen, orders, 
                     <td className="px-8 py-6 font-mono text-xs font-bold text-brand-brown-300">#{order.id.slice(-6)}</td>
                     <td className="px-8 py-6">
                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-brand-brown-50 border border-brand-brown-100 overflow-hidden">
-                             <img src={`https://i.pravatar.cc/100?u=${order.buyerId}`} className="w-full h-full object-cover" />
+                          <div className="w-9 h-9 rounded-full bg-brand-brown-50 border border-brand-brown-100 overflow-hidden flex items-center justify-center">
+                             <img src={`https://i.pravatar.cc/100?u=${order.buyerId}`} className="w-full h-full object-cover" alt="Customer" />
                           </div>
                           <p className="text-sm font-bold text-brand-brown-900">Neighbor</p>
                        </div>
                     </td>
                     <td className="px-8 py-6">
-                      {order.items.map(item => (
-                        <div key={item.mealId} className="text-sm font-medium text-brand-brown-600">
-                          {item.quantity}x {item.name}
-                        </div>
-                      ))}
+                      <div className="space-y-1">
+                        {order.items.map(item => (
+                          <div key={item.mealId} className="text-sm font-medium text-brand-brown-600">
+                            <span className="font-black text-brand-orange-500 mr-1.5">{item.quantity}x</span>
+                            {item.name}
+                          </div>
+                        ))}
+                      </div>
                     </td>
                     <td className="px-8 py-6">
-                      <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase ${
-                        order.status === OrderStatus.PENDING ? 'bg-brand-honey-100 text-brand-honey-600' : 'bg-emerald-100 text-emerald-700'
-                      }`}>
-                        {order.status}
-                      </span>
+                      {getStatusBadge(order.status)}
                     </td>
-                    <td className="px-8 py-6">
-                      <button className="text-xs font-black text-brand-orange-500 hover:text-brand-orange-600 uppercase tracking-wider">Cập nhật</button>
+                    <td className="px-8 py-6 text-right">
+                      <button className="px-4 py-2 bg-white border border-brand-brown-100 text-xs font-black text-brand-orange-500 hover:border-brand-orange-200 rounded-xl uppercase tracking-wider transition-all shadow-sm active:scale-95">Cập nhật</button>
                     </td>
                   </tr>
                 ))
@@ -207,7 +243,7 @@ const MerchantDashboard: React.FC<MerchantDashboardProps> = ({ kitchen, orders, 
                <div key={meal.id} className="bg-white p-5 rounded-[2.5rem] border border-brand-brown-50 shadow-sm group hover:shadow-xl transition-all">
                   <div className="relative h-48 mb-5 overflow-hidden rounded-[2rem]">
                     <img src={meal.image} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-700" alt={meal.name} />
-                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl">
+                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-brand-orange-50">
                        <p className="font-black text-brand-orange-500 text-sm">{meal.price.toLocaleString()}đ</p>
                     </div>
                   </div>
@@ -278,7 +314,7 @@ const MerchantDashboard: React.FC<MerchantDashboardProps> = ({ kitchen, orders, 
           <div className="bg-white w-full max-w-xl rounded-[3rem] p-10 shadow-2xl animate-slideUp border border-brand-brown-100 my-8">
             <div className="flex justify-between items-center mb-8">
               <h3 className="text-2xl font-black text-brand-brown-900">Thêm món mới</h3>
-              <button onClick={() => setIsAddingMeal(false)} className="p-2 text-brand-brown-400">
+              <button onClick={() => setIsAddingMeal(false)} className="p-2 text-brand-brown-400 hover:text-brand-brown-600 transition-colors">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
